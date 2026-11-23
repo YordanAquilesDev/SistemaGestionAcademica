@@ -19,6 +19,24 @@ DELIMITER ;
 
 
 DELIMITER //
+CREATE PROCEDURE sp_buscar_detalle_matricula(
+    IN p_id_alumno INT,
+    IN p_id_seccion INT
+)
+BEGIN
+    SELECT
+        dm.id_detalle_matricula,
+        dm.promedio_final,
+        dm.estado_curso
+    FROM detalle_matricula dm
+    INNER JOIN matricula m ON m.id_matricula = dm.id_matricula
+    WHERE m.id_alumno = p_id_alumno
+      AND dm.id_seccion = p_id_seccion;
+END //
+DELIMITER ;
+
+
+DELIMITER //
 CREATE PROCEDURE sp_listar_calificacion_curso(
     IN p_id_curso INT,
     IN p_id_alumno INT

@@ -59,9 +59,8 @@ public class CalificacionRepositoryImpl implements ICalificacionDao {
     public Calificacion save(Calificacion beans) {
         String sql = "{CALL sp_calificar_alumno(?, ?, ?, ?)}";
 
-        // Suponiendo que 'mysql' es tu método o variable de conexión Connection:
-        try (Connection conn = mysql; // O mysql.getConnection() dependiendo de cómo lo manejes
-                 CallableStatement stmt = conn.prepareCall(sql)) {
+        // The connection belongs to the factory and must remain available for later operations.
+        try (CallableStatement stmt = mysql.prepareCall(sql)) {
 
             // Mapeamos los parámetros en el orden del procedimiento almacenado
             stmt.setInt(1, beans.getId_detalle_matricula());

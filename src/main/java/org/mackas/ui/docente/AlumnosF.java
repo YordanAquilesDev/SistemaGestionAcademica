@@ -19,8 +19,6 @@ import javax.swing.LayoutStyle;
 import org.mackas.model.Alumno;
 import org.mackas.model.Calificacion;
 import org.mackas.model.DetalleMatricula;
-import org.mackas.repository.MatriculaRepositoryImpl;
-import org.mackas.service.impl.CalificacionServiceImpl;
 import org.mackas.service.interf.ICalificacionDao;
 import org.mackas.service.interf.IMatriculaDao;
 
@@ -56,7 +54,7 @@ public class AlumnosF extends JPanel {
                 BorderFactory.createEmptyBorder(12, 18, 12, 18)
         ));
 
-        Dimension dim = new Dimension(480, 95);
+        Dimension dim = new Dimension(480, 110);
         setPreferredSize(dim);
         setMinimumSize(dim);
         setMaximumSize(new Dimension(Integer.MAX_VALUE, 95));
@@ -66,8 +64,8 @@ public class AlumnosF extends JPanel {
 
     private void abrirFormularioCalificacion(Alumno a) {
         Frame parentFrame = (Frame) javax.swing.SwingUtilities.getWindowAncestor(this);
-        JDialog dialog = new JDialog(parentFrame, "Calificar a: " + a.getNombres(), true);
-        dialog.setSize(400, 320);
+        JDialog dialog = new JDialog(parentFrame, "Registrar calificación", true);
+        dialog.setSize(440, 355);
         dialog.setLocationRelativeTo(parentFrame);
         dialog.setLayout(new GridBagLayout());
         dialog.getContentPane().setBackground(Color.WHITE);
@@ -76,9 +74,11 @@ public class AlumnosF extends JPanel {
         gbc.insets = new Insets(10, 15, 10, 15);
         gbc.fill = GridBagConstraints.HORIZONTAL;
 
-        JLabel lblTituloModal = new JLabel("Registro de Notas Académicas");
+        JLabel lblTituloModal = new JLabel("Registro de calificación");
         lblTituloModal.setFont(new Font("Segoe UI", Font.BOLD, 15));
         lblTituloModal.setForeground(new Color(15, 23, 42));
+        JLabel lblAlumno = new JLabel(a.getNombres() + " " + a.getApellidos() + "  |  " + a.getCodigo());
+        lblAlumno.setForeground(new Color(100, 116, 139));
 
         JLabel lblEvaluacion = new JLabel("Nombre Evaluación:");
         JTextField txtEval = new JTextField(15);
@@ -99,18 +99,19 @@ public class AlumnosF extends JPanel {
 
         // Layout del modal
         gbc.gridx = 0; gbc.gridy = 0; gbc.gridwidth = 2; dialog.add(lblTituloModal, gbc);
+        gbc.gridy = 1; dialog.add(lblAlumno, gbc);
         
         gbc.gridwidth = 1;
-        gbc.gridx = 0; gbc.gridy = 1; dialog.add(lblEvaluacion, gbc);
+        gbc.gridx = 0; gbc.gridy = 2; dialog.add(lblEvaluacion, gbc);
         gbc.gridx = 1; dialog.add(txtEval, gbc);
 
-        gbc.gridx = 0; gbc.gridy = 2; dialog.add(lblNota, gbc);
+        gbc.gridx = 0; gbc.gridy = 3; dialog.add(lblNota, gbc);
         gbc.gridx = 1; dialog.add(txtNota, gbc);
 
-        gbc.gridx = 0; gbc.gridy = 3; dialog.add(lblPonderado, gbc);
+        gbc.gridx = 0; gbc.gridy = 4; dialog.add(lblPonderado, gbc);
         gbc.gridx = 1; dialog.add(txtPond, gbc);
 
-        gbc.gridx = 0; gbc.gridy = 4; gbc.gridwidth = 2; 
+        gbc.gridx = 0; gbc.gridy = 5; gbc.gridwidth = 2;
         dialog.add(btnGuardar, gbc);
 
         btnGuardar.addActionListener(e -> {
@@ -123,6 +124,14 @@ public class AlumnosF extends JPanel {
 
                 double nota = Double.parseDouble(txtNota.getText().trim());
                 double ponderado = Double.parseDouble(txtPond.getText().trim());
+                if (nota < 0 || nota > 20) {
+                    JOptionPane.showMessageDialog(dialog, "La nota debe estar entre 0 y 20.", "Validación", JOptionPane.WARNING_MESSAGE);
+                    return;
+                }
+                if (ponderado <= 0 || ponderado > 1) {
+                    JOptionPane.showMessageDialog(dialog, "El ponderado debe ser mayor que 0 y menor o igual a 1.", "Validación", JOptionPane.WARNING_MESSAGE);
+                    return;
+                }
 
                 DetalleMatricula detaM = matrService.search(idSeccion, a.getIdAlumno());
                 if (detaM == null) {
@@ -155,6 +164,10 @@ public class AlumnosF extends JPanel {
         dialog.setVisible(true);
     }
 
+    public void registrarNota() {
+        abrirFormularioCalificacion(alumno);
+    }
+
     private void initComponents() {
         txtNombreCompleto = new JLabel();
         txtDni = new JLabel();
@@ -162,7 +175,7 @@ public class AlumnosF extends JPanel {
         txtCodigo = new JLabel();
         btnCalificar = new JButton();
 
-        txtNombreCompleto.setFont(new Font("Segoe UI", Font.BOLD, 14));
+        txtNombreCompleto.setFont(new Font("Segoe UI", Font.BOLD, 15));
         txtNombreCompleto.setForeground(new Color(15, 23, 42));
 
         txtDni.setFont(new Font("Segoe UI", Font.PLAIN, 12));
@@ -174,7 +187,7 @@ public class AlumnosF extends JPanel {
         txtCodigo.setFont(new Font("Segoe UI", Font.BOLD, 12));
         txtCodigo.setForeground(new Color(16, 185, 129));
 
-        btnCalificar.setText("Calificar");
+        btnCalificar.setText("Registrar nota");
         btnCalificar.setFont(new Font("Segoe UI", Font.BOLD, 12));
         btnCalificar.setBackground(new Color(79, 70, 229));
         btnCalificar.setForeground(Color.WHITE);
@@ -198,7 +211,7 @@ public class AlumnosF extends JPanel {
                             .addComponent(txtEmail)
                             .addGap(0, 0, Short.MAX_VALUE)))
                     .addGap(18, 18, 18)
-                    .addComponent(btnCalificar, GroupLayout.PREFERRED_SIZE, 95, GroupLayout.PREFERRED_SIZE)
+                    .addComponent(btnCalificar, GroupLayout.PREFERRED_SIZE, 120, GroupLayout.PREFERRED_SIZE)
                     .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -214,7 +227,7 @@ public class AlumnosF extends JPanel {
                             .addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
                                 .addComponent(txtDni)
                                 .addComponent(txtEmail)))
-                        .addComponent(btnCalificar, GroupLayout.PREFERRED_SIZE, 48, GroupLayout.PREFERRED_SIZE))
+                        .addComponent(btnCalificar, GroupLayout.PREFERRED_SIZE, 52, GroupLayout.PREFERRED_SIZE))
                     .addContainerGap(12, Short.MAX_VALUE))
         );
     }

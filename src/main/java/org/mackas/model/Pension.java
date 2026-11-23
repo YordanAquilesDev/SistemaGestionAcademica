@@ -6,6 +6,9 @@ import java.time.LocalDateTime;
 
 
 import java.time.LocalDate;
+import org.mackas.service.state.EstadoPension;
+import org.mackas.service.state.PensionPagada;
+import org.mackas.service.state.PensionPendiente;
 
 public class Pension {
     private int idPension;
@@ -17,11 +20,13 @@ public class Pension {
     private LocalDate fechaVencimiento;
     private LocalDateTime fechaPago; // Puede ser null si aún no se paga
     private String estado;         // Ej: 'PENDIENTE', 'PAGADO'
+    private EstadoPension estadoActual;
 
     // Constructor vacío
     public Pension() {
         this.montoMora = 0.00;
         this.estado = "PENDIENTE";
+        this.estadoActual = new PensionPendiente();
     }
 
     // Constructor completo
@@ -37,6 +42,8 @@ public class Pension {
         this.fechaVencimiento = fechaVencimiento;
         this.fechaPago = fechaPago;
         this.estado = estado;
+        this.estadoActual = "PAGADO".equalsIgnoreCase(estado)
+                ? new PensionPagada() : new PensionPendiente();
     }
 
     // Getters y Setters
@@ -110,6 +117,20 @@ public class Pension {
 
     public void setEstado(String estado) {
         this.estado = estado;
+        this.estadoActual = "PAGADO".equalsIgnoreCase(estado)
+                ? new PensionPagada() : new PensionPendiente();
+    }
+
+    public void pagar() {
+        if (estadoActual == null) {
+            estadoActual = new PensionPendiente();
+        }
+        estadoActual.pagar(this);
+    }
+
+    public void cambiarEstado(EstadoPension nuevoEstado) {
+        this.estadoActual = nuevoEstado;
+        this.estado = nuevoEstado.nombre();
     }
 
     @Override

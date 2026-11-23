@@ -192,8 +192,7 @@ public class PagoF extends JPanel {
             };
 
             try {
-                pension.setEstado("PAGADO");
-                pension.setFechaPago(LocalDateTime.now());
+                pension.pagar();
 
                 ProcesarPagoEstrategy procesador = new ProcesarPagoEstrategy(pensionDao);
                 procesador.setMetodoPago(estrategia);

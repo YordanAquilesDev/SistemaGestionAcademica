@@ -31,8 +31,8 @@ public class PensionRepositoryImpl implements IPensionDao {
     public boolean save(Pension p) {
         String sql = "{CALL sp_pagar_pension_alumno(?, ?, ?)}";
 
-        // Asume que tienes una clase para obtener la conexión (ej. Conexion.getConexion())
-        try (Connection cn = mysql; CallableStatement cstmt = cn.prepareCall(sql)) {
+        // Do not close the shared connection; only this statement belongs to the repository call.
+        try (CallableStatement cstmt = mysql.prepareCall(sql)) {
 
             // Asignamos los parámetros que espera el Stored Procedure
             cstmt.setInt(1, p.getIdAlumno());

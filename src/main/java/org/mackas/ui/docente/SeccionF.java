@@ -12,7 +12,10 @@ import javax.swing.BorderFactory;
 import javax.swing.GroupLayout;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTable;
 import javax.swing.LayoutStyle;
+import javax.swing.table.DefaultTableModel;
 import org.mackas.model.Alumno;
 import org.mackas.model.Docente;
 import org.mackas.model.Seccion;
@@ -21,6 +24,7 @@ import org.mackas.service.interf.IAlumnoDao;
 import org.mackas.service.interf.ICalificacionDao;
 import org.mackas.service.interf.IMatriculaDao;
 import org.mackas.service.interf.ISeccionDao;
+import org.mackas.service.proxy.CalificacionProxy;
 
 public class SeccionF extends JPanel {
 
@@ -48,23 +52,20 @@ public class SeccionF extends JPanel {
      */
     public void cargarSecciones() {
         removeAll();
-
         JPanel panelGrid = new JPanel(new GridLayout(0, 2, 25, 25));
         panelGrid.setBackground(new Color(248, 250, 252));
 
         List<Seccion> seccionDocente = null;
         if (docente != null) {
-            int idDocente = docente.getIdDocente() == 0 ? 1 : docente.getIdDocente();
-            seccionDocente = seccionService.findByIdDocente(idDocente);
+            if (docente.getIdDocente() > 0) {
+                seccionDocente = seccionService.findByIdDocente(docente.getIdDocente());
+            }
         }
 
         if (seccionDocente != null && !seccionDocente.isEmpty()) {
             for (Seccion sec : seccionDocente) {
-                // Instanciamos la tarjeta estática y le pasamos la acción (callback) al hacer clic
-                SeccionCard seccionCard = new SeccionCard(sec, clickedSeccion -> {
-                    // Llamamos al método interno para cargar los alumnos de esta sección
-                    cargarAlumnosDeSeccion(clickedSeccion.getId_seccion(), clickedSeccion.getCodigo_seccion());
-                });
+                SeccionCard seccionCard = new SeccionCard(sec,
+                        seleccionada -> cargarAlumnosDeSeccion(seleccionada));
                 panelGrid.add(seccionCard);
             }
         } else {
@@ -72,7 +73,6 @@ public class SeccionF extends JPanel {
             lblVacio.setFont(new Font("Segoe UI", Font.ITALIC, 14));
             panelGrid.add(lblVacio);
         }
-
         add(panelGrid, BorderLayout.CENTER);
         revalidate();
         repaint();
@@ -81,29 +81,46 @@ public class SeccionF extends JPanel {
     /**
      * Muestra la cuadrícula con los alumnos de la sección seleccionada (Todo dentro de SeccionF).
      */
-    public void cargarAlumnosDeSeccion(int idSeccion, String codigoSeccion) {
+    public void cargarAlumnosDeSeccion(Seccion seccion) {
         removeAll();
-
-        JPanel panelGridAlumnos = new JPanel(new GridLayout(0, 2, 25, 25));
-        panelGridAlumnos.setBackground(new Color(248, 250, 252));
-
-        // Obtenemos los alumnos usando el servicio inyectado en SeccionF
-        List<Alumno> alumnosSeccion = alumnoService.findByIdSeccion(idSeccion);
+        List<Alumno> alumnosSeccion = alumnoService.findByIdSeccion(seccion.getId_seccion());
         IMatriculaDao matriculaService= ServiceFactory.MatriculaServiceFactory();
-        ICalificacionDao calificacionService=ServiceFactory.CalificacionServiceFactory();
+        ICalificacionDao calificacionService = new CalificacionProxy(
+                ServiceFactory.CalificacionServiceFactory(), docente);
 
         if (alumnosSeccion != null && !alumnosSeccion.isEmpty()) {
-            for (Alumno alu : alumnosSeccion) {
-                AlumnosF alumnoCard = new AlumnosF(alu, idSeccion,calificacionService,matriculaService);
-                panelGridAlumnos.add(alumnoCard);
+            String[] columnas = {"Código", "Alumno", "DNI", "Correo", "Evaluaciones", "Promedio", "Acción"};
+            DefaultTableModel modelo = new DefaultTableModel(columnas, 0) {
+                @Override public boolean isCellEditable(int fila, int columna) { return false; }
+            };
+            for (Alumno alumno : alumnosSeccion) {
+                List<org.mackas.model.Calificacion> notas = calificacionService.findByIdCursoAlumno(seccion.getId_curso(), alumno.getIdAlumno());
+                int evaluaciones = notas == null ? 0 : notas.size();
+                double promedio = notas == null || notas.isEmpty() ? 0 : notas.stream().mapToDouble(org.mackas.model.Calificacion::getNota).average().orElse(0);
+                modelo.addRow(new Object[]{alumno.getCodigo(), alumno.getNombres() + " " + alumno.getApellidos(), alumno.getDni(), alumno.getEmail(), evaluaciones, String.format("%.2f", promedio), "Registrar nota"});
             }
+            final List<Alumno> alumnos = alumnosSeccion;
+            JTable tabla = new JTable(modelo);
+            tabla.setRowHeight(36);
+            tabla.setFont(new Font("Segoe UI", Font.PLAIN, 13));
+            tabla.getTableHeader().setFont(new Font("Segoe UI", Font.BOLD, 13));
+            tabla.getTableHeader().setBackground(new Color(15, 23, 42));
+            tabla.getTableHeader().setForeground(Color.WHITE);
+            tabla.getColumnModel().getColumn(6).setPreferredWidth(130);
+            tabla.addMouseListener(new MouseAdapter() {
+                @Override public void mouseClicked(MouseEvent e) {
+                    int fila = tabla.rowAtPoint(e.getPoint());
+                    if (fila >= 0 && tabla.columnAtPoint(e.getPoint()) == 6) {
+                        new AlumnosF(alumnos.get(fila), seccion.getId_seccion(), calificacionService, matriculaService).registrarNota();
+                    }
+                }
+            });
+            add(new JScrollPane(tabla), BorderLayout.CENTER);
         } else {
             JLabel lblVacio = new JLabel("No hay alumnos registrados en esta sección.");
             lblVacio.setFont(new Font("Segoe UI", Font.ITALIC, 14));
-            panelGridAlumnos.add(lblVacio);
+            add(lblVacio, BorderLayout.CENTER);
         }
-
-        add(panelGridAlumnos, BorderLayout.CENTER);
         revalidate();
         repaint();
     }

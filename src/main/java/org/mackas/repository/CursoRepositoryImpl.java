@@ -45,6 +45,8 @@ public class CursoRepositoryImpl implements ICursoDao {
                             rs.getInt("creditos"),
                             rs.getInt("ciclo_nivel")
                     );
+                    curso.setId_seccion(rs.getInt("id_seccion"));
+                    curso.setNombre_carrera(rs.getString("nombre_carrera"));
                     cursos.add(curso);
                 }
             }

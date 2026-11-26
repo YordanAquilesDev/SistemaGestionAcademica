@@ -15,10 +15,13 @@ import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
+import javax.swing.JComboBox;
 import javax.swing.LayoutStyle;
 import org.mackas.model.Alumno;
 import org.mackas.model.Calificacion;
 import org.mackas.model.DetalleMatricula;
+import org.mackas.model.Evaluacion;
+import org.mackas.service.factory.ServiceFactory;
 import org.mackas.service.interf.ICalificacionDao;
 import org.mackas.service.interf.IMatriculaDao;
 
@@ -33,19 +36,25 @@ public class AlumnosF extends JPanel {
     
     private ICalificacionDao caliService ;
     private IMatriculaDao matrService ;
+    private final Runnable onSaved;
 
     int idSeccion = 0;
 
     public AlumnosF(Alumno alumno, int idSeccion,ICalificacionDao caliService,IMatriculaDao matriService) {
+        this(alumno, idSeccion, caliService, matriService, null);
+    }
+
+    public AlumnosF(Alumno alumno, int idSeccion,ICalificacionDao caliService,IMatriculaDao matriService, Runnable onSaved) {
         this.alumno = alumno;
         this.idSeccion = idSeccion;
         this.caliService=caliService;
         this.matrService=matriService;
+        this.onSaved = onSaved;
         initComponents();
 
         txtNombreCompleto.setText(alumno.getNombres() + " " + alumno.getApellidos());
         txtDni.setText("DNI: " + alumno.getDni());
-        txtEmail.setText("✉ " + alumno.getEmail());
+        txtEmail.setText(alumno.getEmail());
         txtCodigo.setText("Cod: " + alumno.getCodigo());
 
         setBackground(Color.WHITE);
@@ -80,15 +89,12 @@ public class AlumnosF extends JPanel {
         JLabel lblAlumno = new JLabel(a.getNombres() + " " + a.getApellidos() + "  |  " + a.getCodigo());
         lblAlumno.setForeground(new Color(100, 116, 139));
 
-        JLabel lblEvaluacion = new JLabel("Nombre Evaluación:");
-        JTextField txtEval = new JTextField(15);
-        txtEval.setText("Examen Parcial");
-
         JLabel lblNota = new JLabel("Nota (0 - 20):");
         JTextField txtNota = new JTextField(15);
 
-        JLabel lblPonderado = new JLabel("Ponderado (Ej: 0.30):");
-        JTextField txtPond = new JTextField(15);
+        JLabel lblPonderado = new JLabel("Evaluación:");
+        JComboBox<Evaluacion> cmbEvaluacion = new JComboBox<>();
+        ServiceFactory.EvaluacionServiceFactory().listarPorSeccion(idSeccion).forEach(cmbEvaluacion::addItem);
 
         JButton btnGuardar = new JButton("Guardar Calificación");
         btnGuardar.setBackground(new Color(79, 70, 229));
@@ -102,34 +108,25 @@ public class AlumnosF extends JPanel {
         gbc.gridy = 1; dialog.add(lblAlumno, gbc);
         
         gbc.gridwidth = 1;
-        gbc.gridx = 0; gbc.gridy = 2; dialog.add(lblEvaluacion, gbc);
-        gbc.gridx = 1; dialog.add(txtEval, gbc);
-
-        gbc.gridx = 0; gbc.gridy = 3; dialog.add(lblNota, gbc);
+        gbc.gridx = 0; gbc.gridy = 2; dialog.add(lblNota, gbc);
         gbc.gridx = 1; dialog.add(txtNota, gbc);
 
-        gbc.gridx = 0; gbc.gridy = 4; dialog.add(lblPonderado, gbc);
-        gbc.gridx = 1; dialog.add(txtPond, gbc);
+        gbc.gridx = 0; gbc.gridy = 3; dialog.add(lblPonderado, gbc);
+        gbc.gridx = 1; dialog.add(cmbEvaluacion, gbc);
 
-        gbc.gridx = 0; gbc.gridy = 5; gbc.gridwidth = 2;
+        gbc.gridx = 0; gbc.gridy = 4; gbc.gridwidth = 2;
         dialog.add(btnGuardar, gbc);
 
         btnGuardar.addActionListener(e -> {
             try {
-                String nombreEval = txtEval.getText().trim();
-                if (nombreEval.isEmpty()) {
-                    JOptionPane.showMessageDialog(dialog, "Ingrese el nombre de la evaluación.", "Aviso", JOptionPane.WARNING_MESSAGE);
-                    return;
-                }
-
                 double nota = Double.parseDouble(txtNota.getText().trim());
-                double ponderado = Double.parseDouble(txtPond.getText().trim());
+                Evaluacion evaluacion = (Evaluacion) cmbEvaluacion.getSelectedItem();
                 if (nota < 0 || nota > 20) {
                     JOptionPane.showMessageDialog(dialog, "La nota debe estar entre 0 y 20.", "Validación", JOptionPane.WARNING_MESSAGE);
                     return;
                 }
-                if (ponderado <= 0 || ponderado > 1) {
-                    JOptionPane.showMessageDialog(dialog, "El ponderado debe ser mayor que 0 y menor o igual a 1.", "Validación", JOptionPane.WARNING_MESSAGE);
+                if (evaluacion == null) {
+                    JOptionPane.showMessageDialog(dialog, "Primero configure una evaluación para esta sección.", "Validación", JOptionPane.WARNING_MESSAGE);
                     return;
                 }
 
@@ -141,15 +138,19 @@ public class AlumnosF extends JPanel {
 
                 Calificacion cali = new Calificacion();
                 cali.setId_detalle_matricula(detaM.getId_detalle_matricula());
-                cali.setMombre_evaluacion(nombreEval);
+                cali.setId_evaluacion(evaluacion.getIdEvaluacion());
+                cali.setMombre_evaluacion(evaluacion.getNombre());
                 cali.setNota(nota);
-                cali.setPonderado(ponderado);
+                cali.setPonderado(evaluacion.getPonderado());
 
                 Calificacion resultado = caliService.save(cali);
 
                 if (resultado != null) {
                     JOptionPane.showMessageDialog(dialog, "¡Calificación registrada con éxito!", "Éxito", JOptionPane.INFORMATION_MESSAGE);
                     dialog.dispose();
+                    if (onSaved != null) {
+                        onSaved.run();
+                    }
                 } else {
                     JOptionPane.showMessageDialog(dialog, "No se pudo registrar la calificación.", "Error", JOptionPane.ERROR_MESSAGE);
                 }

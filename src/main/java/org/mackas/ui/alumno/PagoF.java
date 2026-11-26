@@ -92,7 +92,7 @@ public class PagoF extends JPanel {
             JPanel panelBoton = new JPanel(new FlowLayout(FlowLayout.RIGHT, 0, 0));
             panelBoton.setBackground(Color.WHITE);
 
-            JButton btnPagarModal = new JButton("💳 Pagar Ahora");
+            JButton btnPagarModal = new JButton("Pagar ahora");
             btnPagarModal.setFont(new Font("Segoe UI", Font.BOLD, 13));
             btnPagarModal.setBackground(new Color(37, 99, 235)); // Azul corporativo
             btnPagarModal.setForeground(Color.WHITE);

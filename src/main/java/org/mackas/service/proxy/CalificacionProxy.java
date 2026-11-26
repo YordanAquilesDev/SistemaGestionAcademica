@@ -22,6 +22,11 @@ public class CalificacionProxy implements ICalificacionDao {
     }
 
     @Override
+    public List<Calificacion> findByIdSeccionAlumno(int idSeccion, int idAlumno) {
+        return delegate.findByIdSeccionAlumno(idSeccion, idAlumno);
+    }
+
+    @Override
     public Calificacion save(Calificacion calificacion) {
         if (docente == null || docente.getIdDocente() <= 0) {
             throw new SecurityException("Solo un docente autenticado puede registrar calificaciones.");

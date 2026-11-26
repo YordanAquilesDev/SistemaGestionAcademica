@@ -8,6 +8,7 @@ import java.awt.GridLayout;
 import java.util.List;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
+import javax.swing.BoxLayout;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JMenu;
@@ -78,12 +79,12 @@ public class AlumnoUIF extends JFrame {
         menuPrincipal.setBackground(new Color(15, 23, 42)); // Slate-900 (Azul oscuro profundo)
         menuPrincipal.setBorder(BorderFactory.createEmptyBorder(10, 15, 10, 15));
 
-        JMenu mnCursos = crearEstiloMenu("📚  Mis Cursos");
-        JMenu mnNotas = crearEstiloMenu("📊  Calificaciones");
-        JMenu mnHorarios = crearEstiloMenu("🕒  Horarios");
-        JMenu mnPagos = crearEstiloMenu("💳  Pagos");
-        JMenu mnPerfil = crearEstiloMenu("👤  Perfil");
-        JMenu mnSalir = crearEstiloMenu("🚪  Salir");
+        JMenu mnCursos = crearEstiloMenu("Mis Cursos");
+        JMenu mnNotas = crearEstiloMenu("Calificaciones");
+        JMenu mnHorarios = crearEstiloMenu("Horarios");
+        JMenu mnPagos = crearEstiloMenu("Pagos");
+        JMenu mnPerfil = crearEstiloMenu("Perfil");
+        JMenu mnSalir = crearEstiloMenu("Salir");
 
         mnSalir.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
@@ -144,7 +145,7 @@ public class AlumnoUIF extends JFrame {
 
         // --- Contenedor Principal de Tarjetas ---
         jpContenedor = new JPanel();
-        jpContenedor.setLayout(new GridLayout(0, 2, 25, 25)); 
+        jpContenedor.setLayout(new FlowLayout(FlowLayout.LEFT, 18, 18));
         jpContenedor.setBackground(new Color(248, 250, 252));
         jpContenedor.setBorder(BorderFactory.createEmptyBorder(0, 25, 25, 25));
 
@@ -187,25 +188,29 @@ public class AlumnoUIF extends JFrame {
         lblHeaderTitulo.setText("Mi Perfil de Alumno");
         jpContenedor.removeAll();
         jpContenedor.setLayout(new BorderLayout());
-        JLabel lbl = new JLabel("Módulo de perfil en construcción...", JLabel.CENTER);
-        lbl.setFont(new Font("Segoe UI", Font.ITALIC, 14));
-        jpContenedor.add(lbl, BorderLayout.CENTER);
+        String carrera = "No registrada";
+        Carrera carreraAlumno = carrService.findById(alumno.getIdCarrera());
+        if (carreraAlumno != null) carrera = carreraAlumno.getNombre_carrera();
+        JLabel lbl = new JLabel("<html><div style='padding:28px; line-height:1.8'><b style='font-size:18px'>" + alumno.getNombres() + " " + alumno.getApellidos() + "</b><br>Código: " + alumno.getCodigo() + "<br>Carrera: " + carrera + "<br>Correo: " + alumno.getEmail() + "<br>Teléfono: " + alumno.getTelefono() + "</div></html>");
+        lbl.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        lbl.setOpaque(true);
+        lbl.setBackground(Color.WHITE);
+        jpContenedor.add(lbl, BorderLayout.NORTH);
         jpContenedor.revalidate();
         jpContenedor.repaint();
     }
 
     private void mostrarCursos() {
-        lblHeaderTitulo.setText("📚 Mis Cursos Matriculados");
+        lblHeaderTitulo.setText("Mis Cursos Matriculados");
         jpContenedor.removeAll();
         jpContenedor.setLayout(new GridLayout(0, 2, 25, 25));
 
         if (cursosAlumno != null) {
             for (Curso c : cursosAlumno) {
-                Carrera carr = carrService.findById(c.getId_carrera());
-                String nombreCarrera = (carr != null) ? carr.getNombre_carrera() : "Sin Carrera";
+                String nombreCarrera = c.getNombre_carrera();
 
                 CursosF card = new CursosF(
-                    c.getId_curso(),
+                    c.getCodigo_curso(),
                     c.getNombre_curso(),
                     c.getCreditos(),
                     nombreCarrera,
@@ -220,21 +225,18 @@ public class AlumnoUIF extends JFrame {
     }
 
     private void mostrarNotas() {
-        lblHeaderTitulo.setText("📊 Registro de Calificaciones");
+        lblHeaderTitulo.setText("Registro de Calificaciones");
         jpContenedor.removeAll();
-        jpContenedor.setLayout(new GridLayout(0, 1, 20, 20)); 
+        jpContenedor.setLayout(new BoxLayout(jpContenedor, BoxLayout.Y_AXIS));
 
         if (cursosAlumno != null) {
             for (Curso c : cursosAlumno) {
-                List<Calificacion> calificacionPorCurso = caliService.findByIdCursoAlumno(c.getId_curso(), alumno.getIdAlumno());
+                List<Calificacion> calificacionPorCurso = caliService.findByIdSeccionAlumno(c.getId_seccion(), alumno.getIdAlumno());
                 NotasF cardNotas = new NotasF();
-                cardNotas.setNombreCurso("Curso: " + c.getNombre_curso());
-                cardNotas.limpiarTabla();
-
-                for (Calificacion ca : calificacionPorCurso) {
-                    cardNotas.addNota(ca);
-                }
+                cardNotas.setNombreCurso(c.getCodigo_curso() + " · " + c.getNombre_curso());
+                cardNotas.mostrarNotas(ServiceFactory.EvaluacionServiceFactory().listarPorSeccion(c.getId_seccion()), calificacionPorCurso);
                 jpContenedor.add(cardNotas);
+                jpContenedor.add(Box.createVerticalStrut(14));
             }
         }
         jpContenedor.revalidate();
@@ -242,7 +244,7 @@ public class AlumnoUIF extends JFrame {
     }
 
     private void mostrarHorarios() {
-        lblHeaderTitulo.setText("🕒 Horarios de Clases");
+        lblHeaderTitulo.setText("Horarios de Clases");
         jpContenedor.removeAll();
         jpContenedor.setLayout(new GridLayout(0, 2, 25, 25));
 
@@ -264,7 +266,7 @@ public class AlumnoUIF extends JFrame {
     }
   
     private void mostrarPagos(){
-        lblHeaderTitulo.setText("💳 Gestión de Pensiones y Pagos");
+        lblHeaderTitulo.setText("Gestión de Pensiones y Pagos");
         jpContenedor.removeAll(); 
         jpContenedor.setLayout(new BorderLayout()); 
         

@@ -59,6 +59,10 @@ public class ServiceFactory {
    return new DocenteServiceImpl(new DocenteRepositoryImpl(mysql));
     }
 
+    public static IEvaluacionDao EvaluacionServiceFactory() {
+        return new EvaluacionRepositoryImpl(mysql);
+    }
+
     public static SistemaAcademicoFacade SistemaAcademicoFacadeFactory() {
         return new SistemaAcademicoFacade(
                 UserServiceFactory(),

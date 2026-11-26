@@ -12,6 +12,7 @@ import org.mackas.model.Calificacion;
  * @author Administrador
  */
 public interface ICalificacionDao {
-      List<Calificacion> findByIdCursoAlumno(int idCurso,int idAlumno);
+       List<Calificacion> findByIdCursoAlumno(int idCurso,int idAlumno);
+       List<Calificacion> findByIdSeccionAlumno(int idSeccion, int idAlumno);
       Calificacion save(Calificacion c);
 }

@@ -40,6 +40,7 @@ public class CalificacionRepositoryImpl implements ICalificacionDao {
                     Calificacion cal = new Calificacion();
                     cal.setId_calificacion(rs.getInt("id_calificacion"));
                     cal.setId_detalle_matricula(rs.getInt("id_detalle_matricula"));
+                    cal.setId_evaluacion(rs.getInt("id_evaluacion"));
                     cal.setMombre_evaluacion(rs.getString("nombre_evaluacion"));
                     cal.setPonderado(rs.getDouble("ponderado"));
                     cal.setNota(rs.getDouble("nota"));
@@ -56,17 +57,38 @@ public class CalificacionRepositoryImpl implements ICalificacionDao {
     }
 
     @Override
+    public List<Calificacion> findByIdSeccionAlumno(int idSeccion, int idAlumno) {
+        List<Calificacion> lista = new ArrayList<>();
+        try (CallableStatement stmt = mysql.prepareCall("{CALL sp_listar_notas_alumno_seccion(?, ?)}")) {
+            stmt.setInt(1, idAlumno);
+            stmt.setInt(2, idSeccion);
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    Calificacion cal = new Calificacion();
+                    cal.setId_evaluacion(rs.getInt("id_evaluacion"));
+                    cal.setMombre_evaluacion(rs.getString("nombre"));
+                    cal.setPonderado(rs.getDouble("ponderado"));
+                    cal.setNota(rs.getDouble("nota"));
+                    lista.add(cal);
+                }
+            }
+        } catch (SQLException e) {
+            throw new IllegalStateException("No se pudieron obtener las notas de la sección", e);
+        }
+        return lista;
+    }
+
+    @Override
     public Calificacion save(Calificacion beans) {
-        String sql = "{CALL sp_calificar_alumno(?, ?, ?, ?)}";
+        String sql = "{CALL sp_registrar_calificacion(?, ?, ?)}";
 
         // The connection belongs to the factory and must remain available for later operations.
         try (CallableStatement stmt = mysql.prepareCall(sql)) {
 
             // Mapeamos los parámetros en el orden del procedimiento almacenado
             stmt.setInt(1, beans.getId_detalle_matricula());
-            stmt.setString(2, beans.getMombre_evaluacion()); // Ojo con el nombre en tu modelo
+            stmt.setInt(2, beans.getId_evaluacion());
             stmt.setDouble(3, beans.getNota());
-            stmt.setDouble(4, beans.getPonderado());
 
             // Ejecutamos el procedimiento de inserción
             int filasAfectadas = stmt.executeUpdate();

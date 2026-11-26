@@ -49,6 +49,16 @@ public class SeccionRepositoryImpl implements ISeccionDao {
                     seccion.setAula(rs.getString("aula"));
                     seccion.setId_periodo(rs.getInt("id_periodo"));
                     seccion.setCupo_max(rs.getInt("cupo_maximo")); // Ojo: en la BD se llama cupo_maximo
+                    seccion.setCodigo_curso(rs.getString("codigo_curso"));
+                    seccion.setNombre_curso(rs.getString("nombre_curso"));
+                    seccion.setCreditos(rs.getInt("creditos"));
+                    seccion.setCiclo_nivel(rs.getInt("ciclo_nivel"));
+                    seccion.setNombre_carrera(rs.getString("nombre_carrera"));
+                    seccion.setId_docente(rs.getInt("id_docente"));
+                    seccion.setNombre_docente(rs.getString("nombre_docente"));
+                    seccion.setHorario(rs.getString("horario"));
+                    seccion.setMatriculados(rs.getInt("matriculados"));
+                    seccion.setVacantes(rs.getInt("vacantes"));
 
                     // Agregar a la lista
                     listaSecciones.add(seccion);

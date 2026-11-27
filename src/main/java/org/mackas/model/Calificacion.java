@@ -5,6 +5,7 @@ import java.sql.Date;
 public class Calificacion {
     int id_calificacion;
     int id_detalle_matricula;
+    int id_evaluacion;
     String mombre_evaluacion;
     double ponderado;
     double nota;
@@ -17,6 +18,7 @@ public class Calificacion {
     public int getId_detalle_matricula() {
         return id_detalle_matricula;
     }
+    public int getId_evaluacion() { return id_evaluacion; }
 
     public String getMombre_evaluacion() {
         return mombre_evaluacion;
@@ -41,6 +43,7 @@ public class Calificacion {
     public void setId_detalle_matricula(int id_detalle_matricula) {
         this.id_detalle_matricula = id_detalle_matricula;
     }
+    public void setId_evaluacion(int id_evaluacion) { this.id_evaluacion = id_evaluacion; }
 
     public void setMombre_evaluacion(String mombre_evaluacion) {
         this.mombre_evaluacion = mombre_evaluacion;

@@ -6,6 +6,7 @@ import org.mackas.repository.*;
 import org.mackas.service.impl.*;
 import org.mackas.service.interf.*;
 import org.mackas.util.singlenton.ConexionMySQL;
+import org.mackas.service.facade.SistemaAcademicoFacade;
 
 public class ServiceFactory {
 
@@ -55,6 +56,17 @@ public class ServiceFactory {
     }
 
     public static IDocenteDao DocenteServiceFactory() {
-  return new DocenteServiceImpl(new DocenteRepositoryImpl(mysql));
+   return new DocenteServiceImpl(new DocenteRepositoryImpl(mysql));
+    }
+
+    public static IEvaluacionDao EvaluacionServiceFactory() {
+        return new EvaluacionRepositoryImpl(mysql);
+    }
+
+    public static SistemaAcademicoFacade SistemaAcademicoFacadeFactory() {
+        return new SistemaAcademicoFacade(
+                UserServiceFactory(),
+                MatriculaServiceFactory(),
+                CalificacionServiceFactory());
     }
 }

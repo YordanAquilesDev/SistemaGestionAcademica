@@ -21,12 +21,12 @@ public class HorariosF extends JPanel {
         initComponents();
         
         txtSemanaNr.setText(semana != null ? semana.toUpperCase() : "DÍA");
-        txtAula.setText("🏫 Aula: " + aula);
+        txtAula.setText("Aula: " + aula);
         txtIdSeccion.setText("Sec. " + id_seccion);
         
         String inicioStr = (hora_inicio != null) ? hora_inicio.toString().substring(0, 5) : "--:--";
         String finStr = (hora_fin != null) ? hora_fin.toString().substring(0, 5) : "--:--";
-        txtHorario.setText("🕒 " + inicioStr + " hrs  -  " + finStr + " hrs");
+        txtHorario.setText(inicioStr + " hrs  -  " + finStr + " hrs");
 
         Dimension dimensionFija = new Dimension(480, 90);
         setPreferredSize(dimensionFija);

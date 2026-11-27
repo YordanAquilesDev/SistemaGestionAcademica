@@ -41,6 +41,7 @@ public class Login extends javax.swing.JFrame {
         this.matriculaService= matriculaService;
         this.userService=userService;
         initComponents();
+        getRootPane().setDefaultButton(btnEntrar);
         setLocationRelativeTo(null); // Centrar la ventana en la pantalla
         setTitle("Sistema Académico - Iniciar Sesión");
     }
@@ -59,12 +60,22 @@ public class Login extends javax.swing.JFrame {
         setResizable(false);
 
         // Estilo de fondo moderno (Blanco limpio tipo tarjeta corporativa)
-        jPanel1.setBackground(new Color(255, 255, 255));
+        jPanel1.setBackground(new Color(248, 250, 252));
 
         jLabel1.setFont(new Font("Segoe UI", Font.BOLD, 22));
         jLabel1.setForeground(new Color(30, 41, 59));
         jLabel1.setHorizontalAlignment(SwingConstants.CENTER);
         jLabel1.setText("¡Bienvenido!");
+
+        JLabel lblSubtitulo = new JLabel("Sistema Académico");
+        lblSubtitulo.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        lblSubtitulo.setForeground(new Color(100, 116, 139));
+        lblSubtitulo.setHorizontalAlignment(SwingConstants.CENTER);
+
+        JLabel lblAyuda = new JLabel("Ingresa con tu código institucional y contraseña.");
+        lblAyuda.setFont(new Font("Segoe UI", Font.PLAIN, 12));
+        lblAyuda.setForeground(new Color(100, 116, 139));
+        lblAyuda.setHorizontalAlignment(SwingConstants.CENTER);
 
         jLabel2.setFont(new Font("Segoe UI", Font.BOLD, 13));
         jLabel2.setForeground(new Color(100, 116, 139));
@@ -75,12 +86,14 @@ public class Login extends javax.swing.JFrame {
         jLabel3.setText("Contraseña:");
 
         txtCodigo.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        txtCodigo.setBackground(Color.WHITE);
         txtCodigo.setBorder(javax.swing.BorderFactory.createCompoundBorder(
                 javax.swing.BorderFactory.createLineBorder(new Color(226, 232, 240)),
                 javax.swing.BorderFactory.createEmptyBorder(5, 8, 5, 8)
         ));
 
         txtPass.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        txtPass.setBackground(Color.WHITE);
         txtPass.setBorder(javax.swing.BorderFactory.createCompoundBorder(
                 javax.swing.BorderFactory.createLineBorder(new Color(226, 232, 240)),
                 javax.swing.BorderFactory.createEmptyBorder(5, 8, 5, 8)
@@ -94,6 +107,11 @@ public class Login extends javax.swing.JFrame {
         btnEntrar.setFocusPainted(false);
         btnEntrar.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
         btnEntrar.addActionListener(this::btnEntrarActionPerformed);
+        btnEntrar.addMouseListener(new java.awt.event.MouseAdapter() {
+            @Override public void mouseEntered(java.awt.event.MouseEvent evt) { btnEntrar.setBackground(new Color(67, 56, 202)); }
+            @Override public void mouseExited(java.awt.event.MouseEvent evt) { btnEntrar.setBackground(new Color(79, 70, 229)); }
+        });
+        txtPass.addActionListener(this::btnEntrarActionPerformed);
 
         GroupLayout jPanel1Layout = new GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
@@ -102,20 +120,24 @@ public class Login extends javax.swing.JFrame {
                         .addGroup(jPanel1Layout.createSequentialGroup()
                                 .addGap(40, 40, 40)
                                 .addGroup(jPanel1Layout.createParallelGroup(GroupLayout.Alignment.LEADING, false)
-                                        .addComponent(jLabel1, javax.swing.GroupLayout.DEFAULT_SIZE, 320, Short.MAX_VALUE)
+                                         .addComponent(jLabel1, javax.swing.GroupLayout.DEFAULT_SIZE, 320, Short.MAX_VALUE)
+                                        .addComponent(lblSubtitulo, javax.swing.GroupLayout.DEFAULT_SIZE, 320, Short.MAX_VALUE)
                                         .addComponent(jLabel2)
                                         .addComponent(txtCodigo)
                                         .addComponent(jLabel3)
                                         .addComponent(txtPass)
-                                        .addComponent(btnEntrar, javax.swing.GroupLayout.DEFAULT_SIZE, 320, Short.MAX_VALUE))
+                                        .addComponent(btnEntrar, javax.swing.GroupLayout.DEFAULT_SIZE, 320, Short.MAX_VALUE)
+                                        .addComponent(lblAyuda, javax.swing.GroupLayout.DEFAULT_SIZE, 320, Short.MAX_VALUE))
                                 .addContainerGap(40, Short.MAX_VALUE))
         );
         jPanel1Layout.setVerticalGroup(
                 jPanel1Layout.createParallelGroup(GroupLayout.Alignment.LEADING)
                         .addGroup(jPanel1Layout.createSequentialGroup()
                                 .addGap(35, 35, 35)
-                                .addComponent(jLabel1)
-                                .addGap(30, 30, 30)
+                                 .addComponent(jLabel1)
+                                 .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+                                 .addComponent(lblSubtitulo)
+                                 .addGap(28, 28, 28)
                                 .addComponent(jLabel2)
                                 .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
                                 .addComponent(txtCodigo, javax.swing.GroupLayout.PREFERRED_SIZE, 38, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -124,8 +146,10 @@ public class Login extends javax.swing.JFrame {
                                 .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
                                 .addComponent(txtPass, javax.swing.GroupLayout.PREFERRED_SIZE, 38, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addGap(35, 35, 35)
-                                .addComponent(btnEntrar, javax.swing.GroupLayout.PREFERRED_SIZE, 42, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addContainerGap(40, Short.MAX_VALUE))
+                                 .addComponent(btnEntrar, javax.swing.GroupLayout.PREFERRED_SIZE, 42, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                 .addGap(16, 16, 16)
+                                 .addComponent(lblAyuda)
+                                 .addContainerGap(32, Short.MAX_VALUE))
         );
 
         GroupLayout layout = new GroupLayout(getContentPane());

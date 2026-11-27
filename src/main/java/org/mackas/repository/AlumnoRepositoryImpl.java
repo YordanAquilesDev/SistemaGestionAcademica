@@ -67,15 +67,13 @@ public class AlumnoRepositoryImpl implements IAlumnoDao {
                     // Mapeamos los campos del ResultSet con los atributos del modelo Alumno
                     alumno.setIdAlumno(rs.getInt("id_alumno"));
                     alumno.setIdCarrera(rs.getInt("id_carrera"));
+                  //  alumno.setCodigo(rs.getString("codigo"));
                     alumno.setNombres(rs.getString("nombres"));
                     alumno.setApellidos(rs.getString("apellidos"));
                     alumno.setDni(rs.getString("dni"));
                     alumno.setEmail(rs.getString("email"));
                     alumno.setTelefono(rs.getString("telefono"));
                     alumno.setFechaNacimiento(rs.getDate("fecha_nacimiento"));
-                    // Nota: Si en tu procedure o tabla también devuelves el código institucional,
-                    // asegúrate de agregarlo al SELECT del procedure y mapearlo aquí:
-                    // alumno.setCodigo(rs.getString("codigo"));
 
                     listaAlumnos.add(alumno);
                 }

@@ -3,10 +3,12 @@ package org.mackas.model;
 public class Curso {
     int id_curso;
     int id_carrera;
+    int id_seccion;
     String codigo_curso;
     String nombre_curso;
     int creditos;
     int ciclo_nivel;
+    String nombre_carrera;
 
     public Curso(int id_curso, int id_carrera, String codigo_curso, String nombre_curso, int creditos, int ciclo_nivel) {
         this.id_curso = id_curso;
@@ -60,6 +62,10 @@ public class Curso {
     public int getCiclo_nivel() {
         return ciclo_nivel;
     }
+    public int getId_seccion() { return id_seccion; }
+    public void setId_seccion(int id_seccion) { this.id_seccion = id_seccion; }
+    public String getNombre_carrera() { return nombre_carrera; }
+    public void setNombre_carrera(String nombre_carrera) { this.nombre_carrera = nombre_carrera; }
 
     public void setCiclo_nivel(int ciclo_nivel) {
         this.ciclo_nivel = ciclo_nivel;

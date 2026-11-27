@@ -7,7 +7,10 @@ import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import javax.swing.BorderFactory;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JButton;
@@ -50,8 +53,14 @@ public class MatriculaUI extends JFrame {
     private JButton btnQuitarSecc;
     private JTable tblSeccion;
     private JScrollPane jScrollPane1;
+    private JLabel lblCreditos;
     private JLabel lblMontoTotal;
     private JButton btnMatricularse;
+
+    private final List<Seccion> seccionesAgregadas = new ArrayList<>();
+    private final Set<Integer> seccionesSeleccionadas = new HashSet<>();
+    private final Set<Integer> cursosSeleccionados = new HashSet<>();
+    private int creditosSeleccionados;
 
     public MatriculaUI(Alumno a,
                        IMatriculaDao matService,
@@ -87,12 +96,25 @@ public class MatriculaUI extends JFrame {
 
     private void cargarSeccionesPorPeriodo(PeriodoAcademico periodo) {
         cmbSeccion.removeAllItems();
+        limpiarSeleccion();
+        mt1 = null;
         if (periodo != null) {
-            secService.findByIdPeriodo(periodo.getId_periodo()).forEach(s -> {
-                cmbSeccion.addItem(s);
-            });
-            mt1 = new Matricula(alumno.getIdAlumno(), periodo.getId_periodo(), 0.0);
+            secService.findByIdPeriodo(periodo.getId_periodo()).forEach(cmbSeccion::addItem);
+            mt1 = new Matricula(alumno.getIdAlumno(), periodo.getId_periodo(), 200.0);
         }
+    }
+
+    private void limpiarSeleccion() {
+        model.setRowCount(0);
+        seccionesAgregadas.clear();
+        seccionesSeleccionadas.clear();
+        cursosSeleccionados.clear();
+        creditosSeleccionados = 0;
+        actualizarResumen();
+    }
+
+    private void actualizarResumen() {
+        lblCreditos.setText("Créditos seleccionados: " + creditosSeleccionados);
     }
 
     private void initComponents() {
@@ -166,12 +188,19 @@ public class MatriculaUI extends JFrame {
         tblSeccion.setModel(new DefaultTableModel(
                 new Object [][] {},
                 new String [] {
-                        "ID Matrícula", "ID Sección", "Promedio", "Estado"
+                        "Curso", "Sección", "Créditos", "Ciclo", "Horario", "Aula", "Docente", "Vacantes/Cupo", "Estado"
                 }
         ));
-        tblSeccion.setRowHeight(26);
+        tblSeccion.setRowHeight(30);
+        tblSeccion.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
+        int[] anchos = {240, 90, 80, 70, 240, 90, 190, 90, 110};
+        for (int i = 0; i < anchos.length; i++) {
+            tblSeccion.getColumnModel().getColumn(i).setPreferredWidth(anchos[i]);
+        }
 
         jScrollPane1 = new JScrollPane(tblSeccion);
+        jScrollPane1.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+        jScrollPane1.setBorder(BorderFactory.createLineBorder(new Color(226, 232, 240)));
 
         gbc.gridx = 0; gbc.gridy = 2; gbc.gridwidth = 3; gbc.gridheight = 2;
         gbc.weightx = 1.0; gbc.weighty = 1.0; // ¡Clave para que la tabla se expanda en alto y ancho!
@@ -193,12 +222,25 @@ public class MatriculaUI extends JFrame {
         btnQuitarSecc.setPreferredSize(new java.awt.Dimension(150, 34));
         btnQuitarSecc.addActionListener(e -> {
             int selectedRow = tblSeccion.getSelectedRow();
-            if (selectedRow >= 0) {
+            if (selectedRow >= 0 && selectedRow < seccionesAgregadas.size()) {
+                Seccion sec = seccionesAgregadas.get(selectedRow);
+                seccionesSeleccionadas.remove(sec.getId_seccion());
+                cursosSeleccionados.remove(sec.getId_curso());
+                creditosSeleccionados -= sec.getCreditos();
+                seccionesAgregadas.remove(selectedRow);
                 model.removeRow(selectedRow);
+                if (!seccionesSeleccionadas.contains(sec.getId_seccion())) {
+                    cmbSeccion.addItem(sec);
+                }
+                actualizarResumen();
             } else {
                 JOptionPane.showMessageDialog(this, "Seleccione un curso de la tabla para quitar.", "Aviso", JOptionPane.WARNING_MESSAGE);
             }
         });
+
+        lblCreditos = new JLabel("Créditos seleccionados: 0");
+        lblCreditos.setFont(new Font("Segoe UI", Font.BOLD, 13));
+        lblCreditos.setForeground(new Color(71, 85, 105));
 
         lblMontoTotal = new JLabel("Monto Total: S/. 200.00");
         lblMontoTotal.setFont(new Font("Segoe UI", Font.BOLD, 14));
@@ -210,6 +252,9 @@ public class MatriculaUI extends JFrame {
         panelLateral.add(btnQuitarSecc, gbcLat);
 
         gbcLat.gridy = 1;
+        panelLateral.add(lblCreditos, gbcLat);
+
+        gbcLat.gridy = 2;
         panelLateral.add(lblMontoTotal, gbcLat);
 
         gbc.gridx = 3; gbc.gridy = 2; gbc.gridwidth = 1; gbc.gridheight = 1;
@@ -254,19 +299,49 @@ public class MatriculaUI extends JFrame {
             return;
         }
 
+        if (seccionesSeleccionadas.contains(sec.getId_seccion())) {
+            JOptionPane.showMessageDialog(this, "Esta sección ya está agregada a su matrícula.", "Aviso", JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+
+        if (cursosSeleccionados.contains(sec.getId_curso())) {
+            JOptionPane.showMessageDialog(this, "Ya seleccionaste este curso con otra sección.", "Aviso", JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+
+        if (sec.getVacantes() <= 0) {
+            JOptionPane.showMessageDialog(this, "La sección seleccionada no tiene vacantes disponibles.", "Aviso", JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+
         if (mt1 == null) {
             PeriodoAcademico periodo = (PeriodoAcademico) cmbPeriodo.getSelectedItem();
-            mt1 = new Matricula(alumno.getIdAlumno(), periodo.getId_periodo(), 0.0);
+            if (periodo == null) {
+                JOptionPane.showMessageDialog(this, "Seleccione un período académico válido.", "Aviso", JOptionPane.WARNING_MESSAGE);
+                return;
+            }
+            mt1 = new Matricula(alumno.getIdAlumno(), periodo.getId_periodo(), 200.0);
         }
 
         mt1.addSecction(new DetalleMatricula(0, sec.getId_seccion()));
+        seccionesSeleccionadas.add(sec.getId_seccion());
+        cursosSeleccionados.add(sec.getId_curso());
+        seccionesAgregadas.add(sec);
+        creditosSeleccionados += sec.getCreditos();
 
         model.addRow(new Object[]{
-                0,
-                sec.getId_seccion(),
-                0.0,
-                "Registrado"
+                sec.getCodigo_curso() + " · " + sec.getNombre_curso(),
+                sec.getCodigo_seccion(),
+                sec.getCreditos(),
+                sec.getCiclo_nivel(),
+                sec.getHorario(),
+                sec.getAula(),
+                sec.getNombre_docente(),
+                sec.getVacantes() + " / " + sec.getCupo_max(),
+                "Por registrar"
         });
+        cmbSeccion.removeItem(sec);
+        actualizarResumen();
     }
 
     private void btnMatricularseActionPerformed(java.awt.event.ActionEvent evt) {

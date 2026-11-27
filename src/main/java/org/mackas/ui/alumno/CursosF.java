@@ -18,12 +18,12 @@ public class CursosF extends JPanel {
     private JLabel txtModalidad;
     private JLabel txtNombre;
 
-    public CursosF(int idCurso, String nombre, int creditos, String carrera, String modalidad, int ciclo) {
+    public CursosF(String codigoCurso, String nombre, int creditos, String carrera, String modalidad, int ciclo) {
         initComponents();
 
-        txtIdCurso.setText("CÓDIGO: #" + idCurso);
+        txtIdCurso.setText("CÓDIGO: " + codigoCurso);
         txtNombre.setText(nombre);
-        txtCreditos.setText("⚡ " + creditos + " Créditos");
+        txtCreditos.setText(creditos + " Créditos");
         txtCarrera.setText(carrera);
         txtModalidad.setText("• " + modalidad);
         txtCiclo.setText("Ciclo " + ciclo);

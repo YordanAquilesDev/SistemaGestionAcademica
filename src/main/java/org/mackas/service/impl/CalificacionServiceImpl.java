@@ -26,6 +26,11 @@ public CalificacionServiceImpl(ICalificacionDao repo){
     }
 
     @Override
+    public List<Calificacion> findByIdSeccionAlumno(int idSeccion, int idAlumno) {
+       return repo.findByIdSeccionAlumno(idSeccion, idAlumno);
+    }
+
+    @Override
     public Calificacion save(Calificacion beans) {
        return repo.save(beans);
      }

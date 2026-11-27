@@ -19,6 +19,24 @@ DELIMITER ;
 
 
 DELIMITER //
+CREATE PROCEDURE sp_buscar_detalle_matricula(
+    IN p_id_alumno INT,
+    IN p_id_seccion INT
+)
+BEGIN
+    SELECT
+        dm.id_detalle_matricula,
+        dm.promedio_final,
+        dm.estado_curso
+    FROM detalle_matricula dm
+    INNER JOIN matricula m ON m.id_matricula = dm.id_matricula
+    WHERE m.id_alumno = p_id_alumno
+      AND dm.id_seccion = p_id_seccion;
+END //
+DELIMITER ;
+
+
+DELIMITER //
 CREATE PROCEDURE sp_listar_calificacion_curso(
     IN p_id_curso INT,
     IN p_id_alumno INT
@@ -66,6 +84,24 @@ CREATE PROCEDURE sp_detalle_matricula_alumno(
     IN p_id_seccion INT
 )
 BEGIN
+    IF NOT EXISTS (
+        SELECT 1 FROM matricula m JOIN seccion s ON s.id_periodo=m.id_periodo
+        WHERE m.id_matricula=p_id_matricula AND s.id_seccion=p_id_seccion
+    ) THEN
+        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT='La sección no pertenece al período de matrícula';
+    END IF;
+    IF EXISTS (
+        SELECT 1 FROM detalle_matricula dm
+        JOIN seccion actual ON actual.id_seccion=dm.id_seccion
+        JOIN seccion nueva ON nueva.id_seccion=p_id_seccion
+        WHERE dm.id_matricula=p_id_matricula AND actual.id_curso=nueva.id_curso
+    ) THEN
+        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT='El curso ya está registrado con otra sección';
+    END IF;
+    IF (SELECT COUNT(*) FROM detalle_matricula WHERE id_seccion=p_id_seccion) >=
+       (SELECT cupo_maximo FROM seccion WHERE id_seccion=p_id_seccion) THEN
+        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT='La sección no tiene vacantes disponibles';
+    END IF;
     INSERT INTO detalle_matricula (id_matricula, id_seccion, promedio_final, estado_curso) 
     VALUES (p_id_matricula, p_id_seccion, NULL, 'CURSANDO');
 END //
@@ -75,15 +111,18 @@ DELIMITER ;
 DELIMITER //
 CREATE PROCEDURE sp_listar_secciones_periodo(IN p_id_periodo INT)
 BEGIN
-    SELECT 
-        s.id_seccion,
-        s.id_curso,
-        s.codigo_seccion,
-        s.aula,
-        s.id_periodo,
-        s.cupo_maximo
+    SELECT s.id_seccion,s.id_curso,c.codigo codigo_curso,c.nombre nombre_curso,c.creditos,c.ciclo_nivel,
+           ca.nombre nombre_carrera,s.codigo_seccion,s.aula,s.id_periodo,s.cupo_maximo,d.id_docente,
+           CONCAT(d.nombres,' ',d.apellidos) nombre_docente,
+           COALESCE((SELECT GROUP_CONCAT(CONCAT(h.dia_semana,' ',TIME_FORMAT(h.hora_inicio,'%H:%i'),'-',TIME_FORMAT(h.hora_fin,'%H:%i')) ORDER BY FIELD(h.dia_semana,'LUNES','MARTES','MIERCOLES','JUEVES','VIERNES','SABADO'),h.hora_inicio SEPARATOR ' | ') FROM horario h WHERE h.id_seccion=s.id_seccion),'Sin horario') horario,
+           (SELECT COUNT(*) FROM detalle_matricula dm WHERE dm.id_seccion=s.id_seccion) matriculados,
+           s.cupo_maximo-(SELECT COUNT(*) FROM detalle_matricula dm WHERE dm.id_seccion=s.id_seccion) vacantes
     FROM seccion s
-    WHERE s.id_periodo = p_id_periodo;
+    JOIN curso c ON c.id_curso=s.id_curso
+    JOIN carrera ca ON ca.id_carrera=c.id_carrera
+    JOIN docente d ON d.id_docente=s.id_docente
+    WHERE s.id_periodo = p_id_periodo
+    ORDER BY c.codigo,s.codigo_seccion;
 END //
 DELIMITER ;
 

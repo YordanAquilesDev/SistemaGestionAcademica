@@ -30,7 +30,7 @@ public class DocenteRepositoryImpl implements IDocenteDao {
                     docente = new DocenteBuilder()
                     .setIdDocente(rs.getInt("id_docente"))
                     .setIdUsuario(rs.getInt("id_usuario"))
-                    .setCodigo(rs.getString("codigo"))
+                   // .setCodigo(rs.getString("codigo"))
                     .setNombres(rs.getString("nombres"))
                     .setApellidos(rs.getString("apellidos"))
                     .setDni(rs.getString("dni"))

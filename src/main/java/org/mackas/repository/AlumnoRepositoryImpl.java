@@ -67,7 +67,7 @@ public class AlumnoRepositoryImpl implements IAlumnoDao {
                     // Mapeamos los campos del ResultSet con los atributos del modelo Alumno
                     alumno.setIdAlumno(rs.getInt("id_alumno"));
                     alumno.setIdCarrera(rs.getInt("id_carrera"));
-                    alumno.setCodigo(rs.getString("codigo"));
+                  //  alumno.setCodigo(rs.getString("codigo"));
                     alumno.setNombres(rs.getString("nombres"));
                     alumno.setApellidos(rs.getString("apellidos"));
                     alumno.setDni(rs.getString("dni"));

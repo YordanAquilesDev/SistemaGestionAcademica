@@ -141,7 +141,9 @@ public class AlumnosF extends JPanel {
                 cali.setId_evaluacion(evaluacion.getIdEvaluacion());
                 cali.setMombre_evaluacion(evaluacion.getNombre());
                 cali.setNota(nota);
-                cali.setPonderado(evaluacion.getPonderado());
+                double ponderadoRaw = evaluacion.getPonderado();
+                double ponderadoNormalizado = ponderadoRaw > 1.0 ? ponderadoRaw / 100.0 : ponderadoRaw;
+                cali.setPonderado(ponderadoNormalizado);
 
                 Calificacion resultado = caliService.save(cali);
 
